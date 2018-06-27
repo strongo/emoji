@@ -16,16 +16,6 @@ type Map = map[string]Emoji
 
 var All Map
 
-func init() {
-	All = make(Map, len(Food)+len(Flags))
-	if err := Add(Flags...); err != nil {
-		panic(err)
-	}
-	if err := Add(Food...); err != nil {
-		panic(err)
-	}
-}
-
 var ErrDuplicateCode = errors.New("duplicate code")
 
 func Add(emoji ...Emoji) error {
