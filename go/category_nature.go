@@ -1,4 +1,4 @@
-package emoji
+package emojis
 
 var CategoryNature = []string {
 	"🐶", // dog face, tags=[pet], aliases=[dog]

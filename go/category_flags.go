@@ -1,4 +1,4 @@
-package emoji
+package emojis
 
 var CategoryFlags = []string {
 	"🏳️", // white flag, tags=[], aliases=[white_flag]

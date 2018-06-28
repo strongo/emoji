@@ -79,7 +79,7 @@ func (g goGenerator) getWriter(kind, id string) (f io.Writer, err error) {
 		return
 	}
 	writers[id] = f
-	if _, err = fmt.Fprintf(f, `package emoji
+	if _, err = fmt.Fprintf(f, `package emojis
 
 var Category%v = []string {
 `, strings.Title(id)); err != nil {
@@ -119,7 +119,20 @@ func (g goGenerator) Generate(gemojis []GemojiEmoji) (err error) {
 		// }
 	}
 
-	if err = g.generateMapFile(); err != nil {
+	categories := make([]string, len(g.writers["category"]))
+	{
+		var i int
+		for category, _ := range g.writers["category"] {
+			categories[i] = category
+			i++
+		}
+	}
+
+	if err = g.generateMapFile(categories, gemojis); err != nil {
+		return
+	}
+
+	if err = g.generateConstants(gemojis); err != nil {
 		return
 	}
 
@@ -138,40 +151,110 @@ func (g goGenerator) writeItem(kind, id string, gemoji GemojiEmoji) error {
 	return err
 }
 
-func (g goGenerator) generateMapFile() (err error) {
-	emojiMapFileName := "./go/emoji_all_map.go"
-	os.Remove(emojiMapFileName)
-	emojiMapFile, err := os.Create(emojiMapFileName)
+func (g goGenerator) generateMapFile(categories []string, gemojis []GemojiEmoji) (err error) {
+	const fileName = "./go/emoji_all_map.go"
+	os.Remove(fileName)
+	f, err := os.Create(fileName)
 	if err != nil {
 		return
 	}
 	defer func() {
-		emojiMapFile.Close()
+		f.Close()
 	}()
-	if _, err = emojiMapFile.WriteString(`package emoji
+
+	if _, err = f.WriteString(`package emojis
 
 var ByCategory = map[string][]string {
 `); err != nil {
 		return
 	}
 
-	categoryWriters := g.writers["category"]
-	categories := make([]string, len(categoryWriters))
-
-	var i int
-	for category, _ := range categoryWriters {
-		categories[i] = category
-		i++
-	}
 	sort.Strings(categories)
 	for _, category := range categories {
-		if _, err = fmt.Fprintf(emojiMapFile, "\t"+`"%v": Category%v,`+"\n", category, strings.Title(category)); err != nil {
+		if _, err = fmt.Fprintf(f, "\t"+`"%v": Category%v,`+"\n", category, strings.Title(category)); err != nil {
 			return
 		}
 	}
-	if _, err = emojiMapFile.WriteString("}"); err != nil {
+
+	if _, err = f.WriteString(`}
+
+var All = map[string]Info {
+`); err != nil {
 		return
 	}
 
-	return nil
+	for _, gemoji := range gemojis {
+		if gemoji.Emoji == "" {
+			continue
+		}
+		fmt.Fprintf(f, "\t"+`"%v": {Description: "%v", Category: "%v"},`+"\n", gemoji.Emoji, gemoji.Description, gemoji.Category)
+	}
+
+	if _, err = f.WriteString("}"); err != nil {
+		return
+	}
+
+	return
+}
+
+func (goGenerator) generateConstants(gemojis []GemojiEmoji) (err error) {
+	const fileName = "./go/emoji/constants.go"
+	os.Remove(fileName)
+	f, err := os.Create(fileName)
+	if err != nil {
+		return
+	}
+	defer func() {
+		f.Close()
+	}()
+
+	if _, err = f.WriteString(`package emoji
+
+const (
+`); err != nil {
+		return
+	}
+	for _, gemoji := range gemojis {
+		if gemoji.Description == "" {
+			continue
+		}
+		var name string
+		if gemoji.Emoji == "🇹🇷" {
+			name = "TurkeyCountry"
+		} else if gemoji.Emoji == "🏘" {
+			name = "House2"
+		} else {
+			desc := strings.Split(gemoji.Description, " ")
+			for i, d := range desc {
+				if d == "" {
+					continue
+				}
+				d = strings.Replace(d, "&", "And", -1)
+				d = strings.Replace(d, "’", "", -1)
+				d = strings.Replace(d, "-", "", -1)
+				d = strings.Replace(d, ".", "", -1)
+				d = strings.Replace(d, ":", "", -1)
+				d = strings.Replace(d, ";", "", -1)
+				d = strings.Replace(d, ",", "", -1)
+				d = strings.Replace(d, "“", "", -1)
+				d = strings.Replace(d, "”", "", -1)
+				d = strings.Replace(d, "(", "", -1)
+				d = strings.Replace(d, ")", "", -1)
+				d = strings.Replace(d, "!", "", -1)
+				d = strings.Replace(d, "#", "Number", -1)
+				d = strings.Replace(d, "*", "Star", -1)
+				d = strings.Replace(d, "1st", "First", -1)
+				d = strings.Replace(d, "2nd", "Second", -1)
+				d = strings.Replace(d, "3rd", "Third", -1)
+				desc[i] = strings.Title(d)
+			}
+			name = strings.Join(desc, "")
+		}
+
+		fmt.Fprintf(f, "\t%v = \"%v\"\n", name, gemoji.Emoji)
+	}
+	if _, err = f.WriteString(")"); err != nil {
+		return
+	}
+	return
 }

@@ -1,4 +1,4 @@
-package emoji
+package emojis
 
 var CategoryFoods = []string {
 	"🍏", // green apple, tags=[fruit], aliases=[green_apple]

@@ -1,4 +1,4 @@
-package emoji
+package emojis
 
 var CategoryPeople = []string {
 	"😀", // grinning face, tags=[smile happy], aliases=[grinning]

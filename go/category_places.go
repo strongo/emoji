@@ -1,4 +1,4 @@
-package emoji
+package emojis
 
 var CategoryPlaces = []string {
 	"🚗", // automobile, tags=[], aliases=[car red_car]

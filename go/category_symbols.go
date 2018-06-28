@@ -1,4 +1,4 @@
-package emoji
+package emojis
 
 var CategorySymbols = []string {
 	"❤️", // red heart, tags=[love], aliases=[heart]

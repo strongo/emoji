@@ -1,4 +1,4 @@
-package emoji
+package emojis
 
 var CategoryActivity = []string {
 	"⚽️", // soccer ball, tags=[sports], aliases=[soccer]

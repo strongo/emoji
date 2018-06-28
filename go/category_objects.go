@@ -1,4 +1,4 @@
-package emoji
+package emojis
 
 var CategoryObjects = []string {
 	"⌚️", // watch, tags=[time], aliases=[watch]
