@@ -1,16 +1,19 @@
 package main
 
 import (
-	"log"
-	"os"
-	"strings"
-	"fmt"
-	"net/http"
-	"io/ioutil"
 	"encoding/json"
-	"sort"
+	"fmt"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"io"
+	"log"
+	"net/http"
+	"os"
+	"sort"
+	"strings"
 )
+
+var title = cases.Title(language.English)
 
 func main() {
 	gemojis, err := getGemoji(gemojiDBJsonURL)
@@ -38,9 +41,11 @@ func getGemoji(url string) (gs []GemojiEmoji, err error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 
-	emojiFile, err := ioutil.ReadAll(res.Body)
+	emojiFile, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +87,7 @@ func (g goGenerator) getWriter(kind, id string) (f io.Writer, err error) {
 	if _, err = fmt.Fprintf(f, `package emojis
 
 var Category%v = []string {
-`, strings.Title(id)); err != nil {
+`, title.String(id)); err != nil {
 		return
 	}
 	return
@@ -122,7 +127,7 @@ func (g goGenerator) Generate(gemojis []GemojiEmoji) (err error) {
 	categories := make([]string, len(g.writers["category"]))
 	{
 		var i int
-		for category, _ := range g.writers["category"] {
+		for category := range g.writers["category"] {
 			categories[i] = category
 			i++
 		}
@@ -153,13 +158,13 @@ func (g goGenerator) writeItem(kind, id string, gemoji GemojiEmoji) error {
 
 func (g goGenerator) generateMapFile(categories []string, gemojis []GemojiEmoji) (err error) {
 	const fileName = "./go/emoji_all_map.go"
-	os.Remove(fileName)
+	_ = os.Remove(fileName)
 	f, err := os.Create(fileName)
 	if err != nil {
 		return
 	}
 	defer func() {
-		f.Close()
+		_ = f.Close()
 	}()
 
 	if _, err = f.WriteString(`package emojis
@@ -171,7 +176,7 @@ var ByCategory = map[string][]string {
 
 	sort.Strings(categories)
 	for _, category := range categories {
-		if _, err = fmt.Fprintf(f, "\t"+`"%v": Category%v,`+"\n", category, strings.Title(category)); err != nil {
+		if _, err = fmt.Fprintf(f, "\t"+`"%v": Category%v,`+"\n", category, title.String(category)); err != nil {
 			return
 		}
 	}
@@ -187,7 +192,10 @@ var All = map[string]Info {
 		if gemoji.Emoji == "" {
 			continue
 		}
-		fmt.Fprintf(f, "\t"+`"%v": {Description: "%v", Category: "%v"},`+"\n", gemoji.Emoji, gemoji.Description, gemoji.Category)
+		_, err = fmt.Fprintf(f, "\t"+`"%v": {Description: "%v", Category: "%v"},`+"\n", gemoji.Emoji, gemoji.Description, gemoji.Category)
+		if err != nil {
+			return err
+		}
 	}
 
 	if _, err = f.WriteString("}"); err != nil {
@@ -199,13 +207,13 @@ var All = map[string]Info {
 
 func (goGenerator) generateConstants(gemojis []GemojiEmoji) (err error) {
 	const fileName = "./go/emoji/constants.go"
-	os.Remove(fileName)
+	_ = os.Remove(fileName)
 	f, err := os.Create(fileName)
 	if err != nil {
 		return
 	}
 	defer func() {
-		f.Close()
+		_ = f.Close()
 	}()
 
 	if _, err = f.WriteString(`package emoji
@@ -246,12 +254,14 @@ const (
 				d = strings.Replace(d, "1st", "First", -1)
 				d = strings.Replace(d, "2nd", "Second", -1)
 				d = strings.Replace(d, "3rd", "Third", -1)
-				desc[i] = strings.Title(d)
+				desc[i] = title.String(d)
 			}
 			name = strings.Join(desc, "")
 		}
 
-		fmt.Fprintf(f, "\t%v = \"%v\"\n", name, gemoji.Emoji)
+		if _, err = fmt.Fprintf(f, "\t%v = \"%v\"\n", name, gemoji.Emoji); err != nil {
+			return err
+		}
 	}
 	if _, err = f.WriteString(")"); err != nil {
 		return
