@@ -20,7 +20,7 @@ jobs:
           go-version: "~1.21"
           
       - name: go.mod validation
-        run: go run github.com/strongo/gomodlint@latest
+        run: go run github.com/strongo/gomodlint@v0.0.1
 
       - run: go vet ./...
 
