@@ -12,15 +12,15 @@ func TestInit(t *testing.T) {
 	validateList := func(category string, emojis []string) {
 		for _, emoji := range emojis {
 			if info, ok := All[emoji]; !ok {
-				t.Errorf(category + ":emoji %v not found in All")
+				t.Errorf("%s: emoji %v not found in All", category, emoji)
 			} else if emoji == "" {
-				t.Errorf(category + ":emoji %v has no description")
+				t.Errorf("%s: emoji %s has no description", category, emoji)
 			} else {
 				if info.Description == "" {
-					t.Errorf(category + ":emoji %v has no description")
+					t.Errorf("%s: emoji %s has no description", category, emoji)
 				}
 				if info.Category == "" {
-					t.Errorf(category + ":emoji %v has no category")
+					t.Errorf("%s: emoji %s has no category", category, emoji)
 				}
 			}
 		}
