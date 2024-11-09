@@ -2,4 +2,4 @@ module github.com/strongo/emoji
 
 go 1.22.2
 
-require golang.org/x/text v0.19.0
+require golang.org/x/text v0.20.0
