@@ -227,33 +227,34 @@ const (
 			continue
 		}
 		var name string
-		if gemoji.Emoji == "🇹🇷" {
+		switch gemoji.Emoji {
+		case "🇹🇷":
 			name = "TurkeyCountry"
-		} else if gemoji.Emoji == "🏘" {
+		case "🏘":
 			name = "House2"
-		} else {
+		default:
 			desc := strings.Split(gemoji.Description, " ")
 			for i, d := range desc {
 				if d == "" {
 					continue
 				}
-				d = strings.Replace(d, "&", "And", -1)
-				d = strings.Replace(d, "’", "", -1)
-				d = strings.Replace(d, "-", "", -1)
-				d = strings.Replace(d, ".", "", -1)
-				d = strings.Replace(d, ":", "", -1)
-				d = strings.Replace(d, ";", "", -1)
-				d = strings.Replace(d, ",", "", -1)
-				d = strings.Replace(d, "“", "", -1)
-				d = strings.Replace(d, "”", "", -1)
-				d = strings.Replace(d, "(", "", -1)
-				d = strings.Replace(d, ")", "", -1)
-				d = strings.Replace(d, "!", "", -1)
-				d = strings.Replace(d, "#", "Number", -1)
-				d = strings.Replace(d, "*", "Star", -1)
-				d = strings.Replace(d, "1st", "First", -1)
-				d = strings.Replace(d, "2nd", "Second", -1)
-				d = strings.Replace(d, "3rd", "Third", -1)
+				d = strings.ReplaceAll(d, "&", "And")
+				d = strings.ReplaceAll(d, "’", "")
+				d = strings.ReplaceAll(d, "-", "")
+				d = strings.ReplaceAll(d, ".", "")
+				d = strings.ReplaceAll(d, ":", "")
+				d = strings.ReplaceAll(d, ";", "")
+				d = strings.ReplaceAll(d, ",", "")
+				d = strings.ReplaceAll(d, "“", "")
+				d = strings.ReplaceAll(d, "”", "")
+				d = strings.ReplaceAll(d, "(", "")
+				d = strings.ReplaceAll(d, ")", "")
+				d = strings.ReplaceAll(d, "!", "")
+				d = strings.ReplaceAll(d, "#", "Number")
+				d = strings.ReplaceAll(d, "*", "Star")
+				d = strings.ReplaceAll(d, "1st", "First")
+				d = strings.ReplaceAll(d, "2nd", "Second")
+				d = strings.ReplaceAll(d, "3rd", "Third")
 				desc[i] = title.String(d)
 			}
 			name = strings.Join(desc, "")
