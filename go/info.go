@@ -3,7 +3,7 @@ package emojis
 type Info struct {
 	Description string
 	Category    string
-	Tags   []string
+	Tags        []string
 }
 
 //var All map[string]Info
